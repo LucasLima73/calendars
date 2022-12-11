@@ -1,6 +1,13 @@
-import React, {Component} from 'react';
-import {Alert, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {Agenda, DateData, AgendaEntry, AgendaSchedule} from 'react-native-calendars';
+import { useNavigation } from "@react-navigation/native";
+import React, { Component } from "react";
+import { Alert, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  Agenda,
+  DateData,
+  AgendaEntry,
+  AgendaSchedule,
+} from "react-native-calendars";
+import { RootStackParamList } from "../types";
 
 interface State {
   items?: AgendaSchedule;
@@ -8,7 +15,7 @@ interface State {
 
 export default class AgendaScreen extends Component<State> {
   state: State = {
-    items: undefined
+    items: undefined,
   };
 
   // reservationsKeyExtractor = (item, index) => {
@@ -20,7 +27,6 @@ export default class AgendaScreen extends Component<State> {
       <Agenda
         items={this.state.items}
         loadItemsForMonth={this.loadItems}
-        selected={'2017-05-16'}
         renderItem={this.renderItem}
         renderEmptyDate={this.renderEmptyDate}
         rowHasChanged={this.rowHasChanged}
@@ -55,41 +61,47 @@ export default class AgendaScreen extends Component<State> {
 
         if (!items[strTime]) {
           items[strTime] = [];
-          
+
           const numItems = Math.floor(Math.random() * 3 + 1);
           for (let j = 0; j < numItems; j++) {
             items[strTime].push({
-              name: 'Item for ' + strTime + ' #' + j,
+              name: "Item for " + strTime + " #" + j,
               height: Math.max(50, Math.floor(Math.random() * 150)),
-              day: strTime
+              day: strTime,
             });
           }
         }
       }
-      
+
       const newItems: AgendaSchedule = {};
-      Object.keys(items).forEach(key => {
+      Object.keys(items).forEach((key) => {
         newItems[key] = items[key];
       });
       this.setState({
-        items: newItems
+        items: newItems,
       });
     }, 1000);
-  }
+  };
 
   renderItem = (reservation: AgendaEntry, isFirst: boolean) => {
     const fontSize = isFirst ? 16 : 14;
-    const color = isFirst ? 'black' : '#43515c';
+    const color = isFirst ? "black" : "#43515c";
+    const navigation = useNavigation<RootStackParamList>();
 
     return (
       <TouchableOpacity
-        style={[styles.item, {height: reservation.height}]}
-        onPress={() => Alert.alert(reservation.name)}
+        style={[styles.item, { height: reservation.height }]}
+        onPress={() => 
+          navigation.navigate("Modal", {
+            reservation: reservation.name,
+            day: reservation.day,
+          })
+        }
       >
-        <Text style={{fontSize, color}}>{reservation.name}</Text>
+        <Text style={{ fontSize, color }}>{reservation.name}</Text>
       </TouchableOpacity>
     );
-  }
+  };
 
   renderEmptyDate = () => {
     return (
@@ -97,30 +109,30 @@ export default class AgendaScreen extends Component<State> {
         <Text>This is empty date!</Text>
       </View>
     );
-  }
+  };
 
   rowHasChanged = (r1: AgendaEntry, r2: AgendaEntry) => {
     return r1.name !== r2.name;
-  }
+  };
 
   timeToString(time: number) {
     const date = new Date(time);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   }
 }
 
 const styles = StyleSheet.create({
   item: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     flex: 1,
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
-    marginTop: 17
+    marginTop: 17,
   },
   emptyDate: {
     height: 15,
     flex: 1,
-    paddingTop: 30
-  }
+    paddingTop: 30,
+  },
 });
